@@ -13,8 +13,7 @@ async function main() {
   await connection.connect();
 
   const transaction = connection.createTransaction();
-  const results = await transaction
-    .setNumOfPipes(1)
+  transaction
     .pipe(pipelines.CreateTable('test', [['uwu', 'owo']], true))
     .pipe(pipelines.Insert({
       columns: ['uwu'],
@@ -24,17 +23,12 @@ async function main() {
       table: 'test'
     }))
     .pipe(pipelines.Select('test', ['uwu', 'owo']))
-    .pipe(pipelines.DropTable('test'))
-    .execute();
+    .pipe(pipelines.DropTable('test'));
 
-  console.log(results);
+  const all = await transaction.execute();
+
+  console.log(all);
 }
-
-/*
-  columns: string[];
-  values: { [P in keyof T]?: T[P] }
-  table: string;
-*/
 
 function addEvents(connection) {
   connection.on('connect', () => console.log('connected uwu'));

@@ -70,23 +70,47 @@ export class Transaction {
     return this;
   }
 
+  executeFirst<T = unknown>() {
+    if (this.executed) throw new Error('This transaction was already executed');
+
+    return new Promise<T | null>((resolve, reject) => {
+      if (this.pipelines.empty) return reject(new Error('Transaction doesn\'t include any pipelines'));
+
+      const pipeline = this.pipelines.shift();
+      if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
+
+      this.connection.query(pipeline)
+        .then((results) => {
+          this.executed = true;
+          if (results === null) return resolve(null);
+          return resolve(results as T);
+        }).catch(reject);
+    });
+  }
+
   /**
    * Executes the transaction
    */
   execute<T = unknown>() {
     if (this.executed) throw new Error('This transaction was already executed');
 
-    return new Promise<T | null>((resolve, reject) => {
+    return new Promise<T>(async(resolve, reject) => {
       if (this.pipelines.empty) return reject(new Error('Transaction doesn\'t include any pipelines'));
 
-      for (const pipeline of this.pipelines.values()) {
-        this.connection.query(pipeline)
-          .then((results) => {
-            this.executed = true;
-            resolve(results as T);
-          })
-          .catch(reject);
+      const items: unknown[] = [];
+      for (const [key, pipeline] of this.pipelines) {
+        try {
+          const results = await this.connection.query(pipeline);
+          items.push(results);
+          this.pipelines.delete(key);
+        } catch(ex) {
+          reject(ex);
+          break;
+        }
       }
+
+      this.executed = true;
+      return resolve(items as any);
     });
   }
 }
