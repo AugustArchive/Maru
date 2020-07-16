@@ -33,9 +33,6 @@ export const Insert = <T = any>(options: InsertOptions<T>): Pipeline => ({
   id: 'insert',
   getSql() {
     const columns = Object.keys(options.values);
-    const condridict = columns.some(s => !options.columns.includes(s));
-    console.log(condridict);
-
     if (columns.some(s => !options.columns.includes(s))) {
       const missing = columns.filter(col => !options.columns.includes(col));
       throw new TypeError(`Missing ${missing.length} columns to be inserted (${missing.join(', ')})`);

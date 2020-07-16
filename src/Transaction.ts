@@ -80,7 +80,6 @@ export class Transaction {
       if (this.pipelines.empty) return reject(new Error('Transaction doesn\'t include any pipelines'));
 
       for (const pipeline of this.pipelines.values()) {
-        console.log(pipeline.getSql());
         this.connection.query(pipeline)
           .then((results) => {
             this.executed = true;
