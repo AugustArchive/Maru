@@ -6,6 +6,7 @@
 import { Dialect, pipelines } from '@augu/maru';
 
 const dialect = new Dialect({
+  activeConnections: 3,
   username: 'uwu',
   password: 'owo?',
   host: '127.0.0.1',
@@ -13,28 +14,23 @@ const dialect = new Dialect({
 });
 
 const connection = dialect.createConnection();
-connection
-  .build()
-  .then(async(c) => {
-    await c.newDatabase();
+await connection.connect();
 
-    const builder = new pipelines.Select({
-      table: 'myTable',
-      where: ['myColumn', 1]
-    });
+const transaction = connection.createTransaction();
+transaction
+  .pipe(pipelines.CreateTable('test', [['uwu', 'owo']], true))
+  .pipe(pipelines.Insert({
+    columns: ['uwu'],
+    values: {
+      uwu: 'owo'
+    },
+    table: 'test'
+  }))
+  .pipe(pipelines.Select('test', ['uwu', 'owo']))
+  .pipe(pipelines.DropTable('test'));
 
-    const transaction = c.createTransaction();
-    transaction.pipe(builder);
-
-    const result = await transaction.getResult();
-    if (result === null) console.error(`Results returned null for transaction #${transaction.id}`);
-  });
-
-process.on('SIGINT', () => {
-  connection.close();
-  dialect.destroy();
-  process.exit(0);
-});
+const all = await transaction.execute();
+console.log(all);
 ```
 
 ## License
