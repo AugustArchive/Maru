@@ -20,10 +20,14 @@
  * SOFTWARE.
  */
 
-export * from './database';
-export * from './Delete';
-export * from './Update';
-export * from './Insert';
-export * from './Select';
-export * from './Count';
-export * from './table';
+import { Pipeline } from '..';
+
+export const Count = (table: string, amount: number = -1): Pipeline => ({
+  id: 'count_docs',
+  getSql() {
+    if (isNaN(amount)) throw new Error('Amount of documents to find is not a number (use -1 to retrieve all)');
+
+    const count = amount === -1 ? 'count(*)' : `count(${amount})`;
+    return `SELECT ${count} FROM ${table}`;
+  }
+});

@@ -42,7 +42,7 @@ export class Batch {
    * @param connection The connection
    */
   constructor(connection: Connection) {
-    this.numOfPipes = 3; // default to 3
+    this.numOfPipes = Infinity; // default to 3
     this.connection = connection;
     this.pipelines = new Collection();
     this.executed = false;

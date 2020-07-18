@@ -30,10 +30,15 @@ async function main() {
       table: 'test'
     }))
     .pipe(pipelines.Select('test', ['hmm', 'owo']))
+    .pipe(pipelines.Count('test'))
+    .pipe(pipelines.Count('test', 1))
     .pipe(pipelines.DropTable('test'));
 
   const first = await batch.next();
+  console.log(batch.pipelines);
+
   const all = await batch.all();
+  console.log(batch.pipelines);
 
   console.log('First Result:\n', first);
   console.log('All Results:\n', all);
