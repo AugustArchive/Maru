@@ -8,3 +8,6 @@
 
 ## Additions
 - Add an option to close the pool (Dialect#destroy)
+
+# v1.0.2
+- Fix publishing

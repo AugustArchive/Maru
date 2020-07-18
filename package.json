@@ -1,13 +1,14 @@
 {
   "name": "@augu/maru",
   "description": "🌱 Make SQL management easier",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "build/index.js",
   "types": "index.d.ts",
   "files": ["build/", "index.d.ts"],
   "repository": "https://github.com/auguwu/Maru",
   "engines": { "node": ">=10" },
   "scripts": {
+    "prepare": "yarn build",
     "build": "yarn lint && rm -fr build && yarn tsc",
     "lint": "eslint src --ext .ts --fix"
   },
