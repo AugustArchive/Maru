@@ -11,3 +11,10 @@
 
 # v1.0.2
 - Fix publishing
+
+# v1.0.3
+## Fixes
+- Set `numOfPipes` in Batch to Infinity
+
+## Additions
+- Add `Count` pipeline

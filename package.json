@@ -1,7 +1,7 @@
 {
   "name": "@augu/maru",
   "description": "🌱 Make SQL management easier",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "build/index.js",
   "types": "index.d.ts",
   "files": ["build/", "index.d.ts"],

@@ -104,6 +104,13 @@ declare module '@augu/maru' {
       export function TableExists(table: string): Maru.Pipeline;
 
       /**
+       * Counts the amount of documents
+       * @param table The table to find
+       * @param amount The amount (defaults to `-1`, which counts all of them)
+       */
+      export function Count(table: string, amount?: number): Maru.Pipeline;
+
+      /**
        * Pipeline to delete an entry
        * @param table The table name
        * @param column The column to find
