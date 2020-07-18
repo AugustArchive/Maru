@@ -16,21 +16,31 @@ const dialect = new Dialect({
 const connection = dialect.createConnection();
 await connection.connect();
 
-const transaction = connection.createTransaction();
-transaction
-  .pipe(pipelines.CreateTable('test', [['uwu', 'owo']], true))
+const batch = connection.createBatch();
+batch
+  .pipe(pipelines.CreateTable('test', {
+    uwu: 'string',
+    hmm: {
+      nullable: false,
+      primary: true,
+      type: 'string'
+    }
+  }, true))
   .pipe(pipelines.Insert({
-    columns: ['uwu'],
+    columns: ['hmm'],
     values: {
-      uwu: 'owo'
+      hmm: 'owo'
     },
     table: 'test'
   }))
-  .pipe(pipelines.Select('test', ['uwu', 'owo']))
+  .pipe(pipelines.Select('test', ['hmm', 'owo']))
   .pipe(pipelines.DropTable('test'));
 
-const all = await transaction.execute();
-console.log(all);
+const first = await batch.next();
+const all = await batch.all();
+
+console.log('First Result:\n', first);
+console.log('All Results:\n', all);
 ```
 
 ## License
