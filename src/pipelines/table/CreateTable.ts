@@ -20,14 +20,15 @@
  * SOFTWARE.
  */
 
-import { getKindOf, convertJSTypeToSql, SQLOptions } from '../../util';
+import { convertJSTypeToSql, SQLOptions } from '../../util';
 import { Pipeline } from '../..';
 
-const SUPPORTED = ['array', 'float', 'number', 'boolean', 'array', 'string'];
+const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string'];
+type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
 
 // eslint-disable-next-line
 type Values<T> = { 
-  [P in keyof T]?: T[P] | CreateOptions; 
+  [P in keyof T]?: SupportedTypes | CreateOptions; 
 };
 
 interface CreateOptions {
@@ -73,7 +74,9 @@ export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolea
 
           keyValues.push(convertJSTypeToSql(keys[i], val.type, options));
         } else {
-          keyValues.push(convertJSTypeToSql(keys[i], getKindOf(value), {}));
+          if (!SUPPORTED.includes(value)) throw new Error(`Invalid type "${value}" (${SUPPORTED.join(', ')})`);
+
+          keyValues.push(convertJSTypeToSql(keys[i], value, {}));
         }
       }
     }

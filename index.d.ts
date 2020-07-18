@@ -44,8 +44,9 @@ declare module '@augu/maru' {
         type: 'set';
       }
 
+      type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
       type CreateTableValues<T> = {
-        [P in keyof T]?: T[P] | Maru.pipelines.CreateOptions;
+        [P in keyof T]?: SupportedTypes | Maru.pipelines.CreateOptions;
       };
 
       interface CreateOptions {

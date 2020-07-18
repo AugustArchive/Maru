@@ -15,7 +15,7 @@ async function main() {
   const batch = connection.createBatch();
   batch
     .pipe(pipelines.CreateTable('test', {
-      uwu: 'owo',
+      uwu: 'string',
       hmm: {
         nullable: false,
         primary: true,
