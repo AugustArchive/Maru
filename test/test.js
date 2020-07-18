@@ -12,22 +12,31 @@ async function main() {
 
   await connection.connect();
 
-  const transaction = connection.createTransaction();
-  transaction
-    .pipe(pipelines.CreateTable('test', [['uwu', 'owo']], true))
+  const batch = connection.createBatch();
+  batch
+    .pipe(pipelines.CreateTable('test', {
+      uwu: 'owo',
+      hmm: {
+        nullable: false,
+        primary: true,
+        type: 'string'
+      }
+    }, true))
     .pipe(pipelines.Insert({
-      columns: ['uwu'],
+      columns: ['hmm'],
       values: {
-        uwu: 'owo'
+        hmm: 'owo'
       },
       table: 'test'
     }))
-    .pipe(pipelines.Select('test', ['uwu', 'owo']))
+    .pipe(pipelines.Select('test', ['hmm', 'owo']))
     .pipe(pipelines.DropTable('test'));
 
-  const all = await transaction.execute();
+  const first = await batch.next();
+  const all = await batch.all();
 
-  console.log(all);
+  console.log('First Result:\n', first);
+  console.log('All Results:\n', all);
 }
 
 function addEvents(connection) {
@@ -37,10 +46,10 @@ function addEvents(connection) {
 
 main()
   .then(() => {
-    process.exitCode = 0;
+    process.exit();
   }).catch((error) => {
     console.error(error);
-    process.exitCode = 1;
+    process.exit();
   });
 
 process.on('SIGINT', () => {

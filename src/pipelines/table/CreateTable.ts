@@ -23,25 +23,61 @@
 import { getKindOf, convertJSTypeToSql, SQLOptions } from '../../util';
 import { Pipeline } from '../..';
 
-export const CreateTable = (table: string, values?: [string, unknown][], exists: boolean = false,): Pipeline => ({
+const SUPPORTED = ['array', 'float', 'number', 'boolean', 'array', 'string'];
+
+// eslint-disable-next-line
+type Values<T> = { 
+  [P in keyof T]?: T[P] | CreateOptions; 
+};
+
+interface CreateOptions {
+  /** If the value is nullable */
+  nullable?: boolean;
+
+  /** If the value is a primary key */
+  primary?: boolean;
+
+  /** Allocate a custom size (only used in Arrays and Strings) */
+  size?: number;
+
+  /** The type */
+  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
+}
+
+export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolean = false): Pipeline => ({
   id: 'create_table',
   getSql() {
     const keyValues: string[] = [];
     if (values) {
-      for (let i = 0; i < values.length; i++) {
-        const [key, value] = values[i];
-        const type = getKindOf(value);
-        const options: SQLOptions = {};
+      const keys = Object.keys(values);
+      for (let i = 0; i < keys.length; i++) {
+        const value = values[keys[i]];
 
-        if (i === 0) options.primary = true; // TODO: Add a "primary" label?
-        if (value === null) options.nullable = true;
-        if (Array.isArray(value)) options.array = true;
-        // TODO: Add a way to allocate a size if it's an array
+        // JavaScript is weird:
+        // I added the check if it's not an array since
+        // typeof an array returns 'object'?
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          const val = value as CreateOptions;
+          if (!val.hasOwnProperty('type')) throw new Error('Missing "type"');
+          if (!SUPPORTED.includes(val.type)) throw new Error(`SQL type "${val.type}" is not a valid type (${SUPPORTED.join(', ')})`);
+        
+          const options: SQLOptions = {};
+          if (val.hasOwnProperty('primary') && val.primary!) options.primary = true;
+          if (val.hasOwnProperty('null') && val.nullable!) options.nullable = true;
+          if (val.hasOwnProperty('size')) {
+            if (!['array', 'string'].includes(val.type)) throw new Error(`SQL type "${val.type}" cannot have a allocated size, only arrays and strings are supported`);
+            if (isNaN(val.size!) || !Number.isInteger(val.size!)) throw new Error('Allocated size cannot be NaN or a float integer');
 
-        keyValues.push(convertJSTypeToSql(key, type, options));
+            options.size = val.size!;
+          }
+
+          keyValues.push(convertJSTypeToSql(keys[i], val.type, options));
+        } else {
+          keyValues.push(convertJSTypeToSql(keys[i], getKindOf(value), {}));
+        }
       }
     }
-
+    
     return `CREATE TABLE ${exists ? 'IF NOT EXISTS' : ''} ${table}${keyValues.length ? ` (${keyValues.join(', ')})` : ''};`;
   }
 });

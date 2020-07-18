@@ -67,4 +67,11 @@ export class Dialect {
     if (this.connections.size > this.activeConnections) throw new Error(`You have maxed out the amount of connections to be running (${this.activeConnections})`);
     return new Connection(this.pool);
   }
+
+  /**
+   * Destroy this Dialect
+   */
+  destroy() {
+    this.pool.end();
+  }
 }

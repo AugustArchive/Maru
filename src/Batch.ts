@@ -24,7 +24,7 @@ import type { Pipeline } from './Pipeline';
 import { Collection } from '@augu/immutable';
 import { Connection } from './Connection';
 
-export class Transaction {
+export class Batch {
   /** The number of pipes */
   private numOfPipes: number;
 
@@ -70,18 +70,20 @@ export class Transaction {
     return this;
   }
 
-  executeFirst<T = unknown>() {
+  /**
+   * Executes the next pipe
+   */
+  next<T = unknown>() {
     if (this.executed) throw new Error('This transaction was already executed');
 
     return new Promise<T | null>((resolve, reject) => {
-      if (this.pipelines.empty) return reject(new Error('Transaction doesn\'t include any pipelines'));
+      if (this.pipelines.empty) return reject(new Error('Batch doesn\'t include any pipelines'));
 
       const pipeline = this.pipelines.shift();
       if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
 
       this.connection.query(pipeline)
         .then((results) => {
-          this.executed = true;
           if (results === null) return resolve(null);
           return resolve(results as T);
         }).catch(reject);
@@ -89,9 +91,9 @@ export class Transaction {
   }
 
   /**
-   * Executes the transaction
+   * Executes the batch and returns an Array of the result
    */
-  execute<T = unknown>() {
+  all<T = unknown>() {
     if (this.executed) throw new Error('This transaction was already executed');
 
     return new Promise<T>(async(resolve, reject) => {

@@ -44,6 +44,24 @@ declare module '@augu/maru' {
         type: 'set';
       }
 
+      type CreateTableValues<T> = {
+        [P in keyof T]?: T[P] | Maru.pipelines.CreateOptions;
+      };
+
+      interface CreateOptions {
+        /** If the value is nullable */
+        nullable?: boolean;
+      
+        /** If the value is a primary key */
+        primary?: boolean;
+      
+        /** Allocate a custom size (only used in Arrays and Strings) */
+        size?: number;
+      
+        /** The type */
+        type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
+      }
+
       /**
        * Pipeline to create a database
        * @param db The database name
@@ -68,7 +86,8 @@ declare module '@augu/maru' {
        * @param values Any values to add
        * @param exists If we should apply `IF NOT EXISTS`
        */
-      export function CreateTable(table: string, values?: [string, unknown][], exists?: boolean): Maru.Pipeline;
+      // eslint-disable-next-line
+      export function CreateTable<T extends object>(table: string, values?: Maru.pipelines.CreateTableValues<T>, exists?: boolean): Maru.Pipeline;
 
       /**
        * Pipeline to drop the table
@@ -134,7 +153,7 @@ declare module '@augu/maru' {
     /**
      * The core of actually connecting to the database
      */
-    export class Connection extends EventEmitter {
+    class Connection extends EventEmitter {
       /** Check if the connection exists */
       public connected: boolean;
     
@@ -156,9 +175,9 @@ declare module '@augu/maru' {
       connect(): Promise<void>;
     
       /**
-       * Creates a new Transaction
+       * Creates a new Batch
        */
-      createTransaction(): Maru.Transaction;
+      createBatch(): Maru.Batch;
     
       /**
        * Queries SQL and returns the value
@@ -199,7 +218,7 @@ declare module '@augu/maru' {
       createConnection(): Maru.Connection;
     }
 
-    export class Transaction {
+    class Batch {
       /** The number of pipes */
       private numOfPipes: number;
     
@@ -235,12 +254,12 @@ declare module '@augu/maru' {
       /**
        * Executes the first pipeline
        */
-      executeFirst<T = unknown>(): Promise<T | null>;
+      next<T = unknown>(): Promise<T | null>;
     
       /**
        * Executes the transaction
        */
-      execute<T = unknown>(): Promise<T[]>;
+      all<T = unknown>(): Promise<T[]>;
     }
   }
 

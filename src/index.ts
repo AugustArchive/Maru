@@ -24,8 +24,6 @@ import * as pipelines from './pipelines';
 
 const version: string = require('../package.json').version;
 
-export * from './Transaction';
-export * from './Connection';
 export * from './Pipeline';
 export * from './Dialect';
 export { pipelines, version }; // make it as a namespace bc namespaces are cool

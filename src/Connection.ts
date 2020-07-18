@@ -23,7 +23,7 @@
 import { PoolClient, Pool } from 'pg';
 import type { Pipeline } from './Pipeline';
 import { EventEmitter } from 'events';
-import { Transaction } from './Transaction';
+import { Batch } from './Batch';
 
 /**
  * The core of actually connecting to the database
@@ -72,8 +72,8 @@ export class Connection extends EventEmitter {
   /**
    * Creates a new Transaction
    */
-  createTransaction() {
-    return new Transaction(this);
+  createBatch() {
+    return new Batch(this);
   }
 
   /**
