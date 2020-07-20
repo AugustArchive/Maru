@@ -68,8 +68,8 @@ export function convertJSTypeToSql(
   const array = isArray ? `[${allocSize > 1 ? allocSize : ''}]` : '';
   switch (type) {
     case 'boolean': return `${name.toLowerCase()} BOOL${isNullable}${isPrimary}`;
-    case 'string':
-    case 'object': return `${name.toLowerCase()} VARCHAR${size}${array}${isNullable}${isPrimary}`;
+    case 'string': return `${name.toLowerCase()} VARCHAR${size}${array}${isNullable}${isPrimary}`;
+    case 'object': return `${name.toLowerCase()} JSONB${size}${array}${isNullable}${isPrimary}`;
     case 'bigint': return `${name.toLowerCase()} BIGINT${array}${isNullable}${isPrimary}`;
     case 'number': return `${name.toLowerCase()} INTEGER${array}${isNullable}${isPrimary}`;
     case 'float': return `${name.toLowerCase()} DOUBLE${array}${isNullable}${isPrimary}`;
