@@ -23,8 +23,8 @@
 import { convertJSTypeToSql, SQLOptions } from '../../util';
 import { Pipeline } from '../..';
 
-const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string'];
-type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
+const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string', 'object'];
+type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
 
 // eslint-disable-next-line
 type Values<T> = { 
@@ -42,7 +42,7 @@ interface CreateOptions {
   size?: number;
 
   /** The type */
-  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
+  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
 }
 
 export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolean = false): Pipeline => ({
@@ -66,7 +66,7 @@ export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolea
           if (val.hasOwnProperty('primary') && val.primary!) options.primary = true;
           if (val.hasOwnProperty('null') && val.nullable!) options.nullable = true;
           if (val.hasOwnProperty('size')) {
-            if (!['array', 'string'].includes(val.type)) throw new Error(`SQL type "${val.type}" cannot have a allocated size, only arrays and strings are supported`);
+            if (!['array', 'string'].includes(val.type)) throw new Error(`SQL type "${val.type}" cannot have an allocated size, only arrays and strings are supported`);
             if (isNaN(val.size!) || !Number.isInteger(val.size!)) throw new Error('Allocated size cannot be NaN or a float integer');
 
             options.size = val.size!;
@@ -75,7 +75,6 @@ export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolea
           keyValues.push(convertJSTypeToSql(keys[i], val.type, options));
         } else {
           if (!SUPPORTED.includes(value)) throw new Error(`Invalid type "${value}" (${SUPPORTED.join(', ')})`);
-
           keyValues.push(convertJSTypeToSql(keys[i], value, {}));
         }
       }

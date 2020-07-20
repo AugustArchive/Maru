@@ -23,6 +23,34 @@
 import type { Pipeline } from './Pipeline';
 import { Collection } from '@augu/immutable';
 import { Connection } from './Connection';
+import { getKindOf } from './util';
+
+function convertResults<T>(pipe: Pipeline, results: any): T {
+  if (results === null) return (<any> null);
+  switch (pipe.id) {
+    case 'select_all':
+    case 'select': {
+      const keys = Object.keys(results);
+      keys.map((key) => {
+        const value = results[key];
+        if (getKindOf(value) === 'string') {
+          try {
+            // Check if the value is JSONable
+            JSON.parse(value);
+            results[key] = JSON.parse(value);
+          } catch {
+            // ignore since it's not a JSON object/array
+          }
+        }
+      });
+    } break;
+
+    default: break;
+  }
+
+  if (pipe.id === 'count_docs') return <any> Number(results['count']);
+  return results;
+}
 
 export class Batch {
   /** The number of pipes */
@@ -83,10 +111,7 @@ export class Batch {
       if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
 
       this.connection.query(pipeline)
-        .then((results) => {
-          if (results === null) return resolve(null);
-          return resolve(results as T);
-        }).catch(reject);
+        .then((results: any) => resolve(convertResults(pipeline, results))).catch(reject);
     });
   }
 
@@ -103,7 +128,7 @@ export class Batch {
       for (const [key, pipeline] of this.pipelines) {
         try {
           const results = await this.connection.query(pipeline);
-          items.push(results);
+          items.push(convertResults(pipeline, results));
           this.pipelines.delete(key);
         } catch(ex) {
           reject(ex);

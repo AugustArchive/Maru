@@ -56,7 +56,7 @@ export function convertJSTypeToSql(
   const allocSize = options.hasOwnProperty('size') && options.size! > 1 ? options.size! : '';
   const isArray = options.hasOwnProperty('array') && options.array!;
 
-  if (['object', 'function', 'class', 'symbol', 'undefined', 'null'].includes(type)) throw new Error(`Type "${type}" is not supported`);
+  if (['function', 'class', 'symbol', 'undefined', 'null'].includes(type)) throw new Error(`Type "${type}" is not supported`);
   if (['boolean'].includes(type) && isArray) throw new TypeError('Array support for booleans will not be supported');
   if (isArray && (options.hasOwnProperty('primary') && options.primary!)) throw new Error('Primary key cannot be an Array');
   if (
@@ -68,7 +68,8 @@ export function convertJSTypeToSql(
   const array = isArray ? `[${allocSize > 1 ? allocSize : ''}]` : '';
   switch (type) {
     case 'boolean': return `${name.toLowerCase()} BOOL${isNullable}${isPrimary}`;
-    case 'string': return `${name.toLowerCase()} VARCHAR${size}${array}${isNullable}${isPrimary}`;
+    case 'string':
+    case 'object': return `${name.toLowerCase()} VARCHAR${size}${array}${isNullable}${isPrimary}`;
     case 'bigint': return `${name.toLowerCase()} BIGINT${array}${isNullable}${isPrimary}`;
     case 'number': return `${name.toLowerCase()} INTEGER${array}${isNullable}${isPrimary}`;
     case 'float': return `${name.toLowerCase()} DOUBLE${array}${isNullable}${isPrimary}`;

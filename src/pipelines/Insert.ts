@@ -41,9 +41,9 @@ export const Insert = <T = any>(options: InsertOptions<T>): Pipeline => ({
     function convert([_, value]: [string, unknown]) {
       const type = getKindOf(value);
       if (type === 'array') return convertArrayToSql(<unknown[]> value);
-      if (type === 'string') return escape(<string> value);
-
-      return value;
+      else if (type === 'string') return escape(<string> value);
+      else if (type === 'object') return escape(JSON.stringify(<any> value));
+      else return value;
     }
 
     const values = Object.entries(options.values).map(convert);

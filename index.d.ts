@@ -60,7 +60,7 @@ declare module '@augu/maru' {
         size?: number;
       
         /** The type */
-        type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
+        type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
       }
 
       /**
