@@ -18,3 +18,7 @@
 
 ## Additions
 - Add `Count` pipeline
+
+## v1.1.0
+- Add Object supports (object -> jsonb)
+- Fixed where the count pipe would return an object of `{ count: number }`, now it returns a number
