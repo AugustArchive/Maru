@@ -28,7 +28,6 @@ async function main() {
       }
     }, true))
     .pipe(pipelines.Insert({
-      columns: ['owo', 'id'],
       values: {
         id: '1',
         owo: {
