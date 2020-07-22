@@ -72,6 +72,6 @@ export class Dialect {
    * Destroy this Dialect
    */
   destroy() {
-    this.pool.end();
+    return this.pool.end();
   }
 }

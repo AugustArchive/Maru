@@ -102,7 +102,7 @@ export class Batch {
    * Executes the next pipe
    */
   next<T = unknown>() {
-    if (this.executed) throw new Error('This transaction was already executed');
+    if (this.executed) throw new Error('This batch was already executed');
 
     return new Promise<T | null>((resolve, reject) => {
       if (this.pipelines.empty) return reject(new Error('Batch doesn\'t include any pipelines'));
@@ -110,8 +110,8 @@ export class Batch {
       const pipeline = this.pipelines.shift();
       if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
 
-      this.connection.query(pipeline)
-        .then((results: any) => resolve(convertResults(pipeline, results))).catch(reject);
+      this.connection.query<T>(pipeline)
+        .then((results) => resolve(convertResults(pipeline, results))).catch(reject);
     });
   }
 

@@ -24,7 +24,6 @@ import { escape, getKindOf, convertArrayToSql } from '../util';
 import { Pipeline } from '..';
 
 interface InsertOptions<T> {
-  columns: string[];
   values: { [P in keyof T]?: T[P] }
   table: string;
 }
@@ -33,12 +32,12 @@ export const Insert = <T = any>(options: InsertOptions<T>): Pipeline => ({
   id: 'insert',
   getSql() {
     const columns = Object.keys(options.values);
-    if (columns.some(s => !options.columns.includes(s))) {
-      const missing = columns.filter(col => !options.columns.includes(col));
+    if (columns.some(s => !columns.includes(s))) {
+      const missing = columns.filter(col => !columns.includes(col));
       throw new TypeError(`Missing ${missing.length} columns to be inserted (${missing.join(', ')})`);
     }
 
-    function convert([_, value]: [string, unknown]) {
+    function convert(value: unknown) {
       const type = getKindOf(value);
       if (type === 'array') return convertArrayToSql(<unknown[]> value);
       else if (type === 'string') return escape(<string> value);
@@ -46,7 +45,7 @@ export const Insert = <T = any>(options: InsertOptions<T>): Pipeline => ({
       else return value;
     }
 
-    const values = Object.entries(options.values).map(convert);
-    return `INSERT INTO ${options.table} (${options.columns.join(', ')}) VALUES (${values.join(', ')});`;
+    const values = Object.values(options.values).map(convert);
+    return `INSERT INTO ${options.table} (${columns.join(', ')}) VALUES (${values.join(', ')});`;
   }
 });

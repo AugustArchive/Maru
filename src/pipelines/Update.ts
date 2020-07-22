@@ -25,9 +25,12 @@ import { escape } from '../util';
 
 const TYPES = ['set'];
 
-interface UpdateOptions {
+interface UpdateOptions<T> {
+  /** Return the values when it's executed (that you want) */
+  returning?: string[];
+
   /** The values to insert */
-  values: [string, unknown][];
+  values: { [P in keyof T]?: T[P]; };
 
   /** The query (to find it) */
   query?: [string, unknown];
@@ -39,27 +42,20 @@ interface UpdateOptions {
   type: 'set';
 }
 
-export const Update = (options: UpdateOptions): Pipeline => ({
+export const Update = <V>(options: UpdateOptions<V>): Pipeline => ({
   id: 'update',
   getSql() {
     if (!TYPES.includes(options.type)) throw new Error(`Type "${options.type}" is not valid (${TYPES.join(', ')})`);
     if (options.query && options.query.length < 1) throw new Error('Query must be an array sorted by key, value (i.e: ["a", 2])');
 
-    let sql = `UPDATE ${options.table} ${options.type.toUpperCase()}`;
-    const keys: string[] = [];
-    const values: any[] = [];
+    let sql = `UPDATE ${options.table} ${options.type.toUpperCase()} `;
+    const pairs: string[] = [];
 
-    for (const [key, value] of options.values) {
-      if (keys.includes(key)) throw new Error(`Key "${key}" is already here to be in bulk`);
-      
-      keys.push(key);
-      values.push(value);
-    }
-
-    if (!keys.length) throw new Error('No keys were provided.');
-    sql += ` (${keys.join(', ')}) = (${values.map(escape).join(', ')})`;
+    for (const [key, value] of Object.entries(options.values)) pairs.push(`${key} = ${escape(value)}`);
+    sql += pairs.join(', ');
 
     if (options.query) sql += ` WHERE ${options.query[0]} = ${escape(options.query[1])}`;
+    if (options.returning) sql += ` RETURNING ${options.returning.map(s => s.toLowerCase()).join(', ')}`;
 
     sql += ';';
     return sql;

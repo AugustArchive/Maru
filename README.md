@@ -18,23 +18,45 @@ await connection.connect();
 
 const batch = connection.createBatch();
 batch
+  .pipe(pipelines.DropTable('test'))
   .pipe(pipelines.CreateTable('test', {
-    uwu: 'string',
-    hmm: {
+    owo: {
+      nullable: false,
+      primary: false,
+      type: 'object'
+    },
+    id: {
       nullable: false,
       primary: true,
       type: 'string'
     }
   }, true))
   .pipe(pipelines.Insert({
-    columns: ['hmm'],
+    columns: ['owo', 'id'],
     values: {
-      hmm: 'owo'
+      id: '1',
+      owo: {
+        uwu: true,
+        hecc: false
+      }
     },
     table: 'test'
   }))
-  .pipe(pipelines.Select('test', ['hmm', 'owo']))
-  .pipe(pipelines.DropTable('test'));
+  .pipe(pipelines.Select('test', ['id', '1']))
+  .pipe(pipelines.Count('test'))
+  .pipe(pipelines.Count('test', 1))
+  .pipe(pipelines.Update({
+    returning: ['id'],
+    values: {
+      owo: {
+        hecc: true,
+        uwu: false
+      }
+    },
+    query: ['id', '1'],
+    table: 'test',
+    type: 'set'
+  }));
 
 const first = await batch.next();
 const all = await batch.all();

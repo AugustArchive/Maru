@@ -21,10 +21,17 @@
  */
 
 /**
- * Appends `'` if it's a string
+ * Check if `data` is an object
+ * @param data The data itself
+ */
+// eslint-disable-next-line
+export const isObject = (data: unknown): data is object => typeof data === 'object' && !Array.isArray(data);
+
+/**
+ * Appends `'` if it's a string or an object (jsonb)
  * @param type The type to escape
  */
-export const escape = (type: any) => typeof type === 'string' ? `'${type}'` : type;
+export const escape = (type: any) => typeof type === 'string' ? `'${type}'` : isObject(type) ? `'${JSON.stringify(type)}'` : type;
 
 export interface SQLOptions {
   /** Is it nullable? */

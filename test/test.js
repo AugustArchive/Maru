@@ -14,22 +14,23 @@ async function main() {
 
   const batch = connection.createBatch();
   batch
+    .pipe(pipelines.DropTable('test'))
     .pipe(pipelines.CreateTable('test', {
-      hmm: {
-        nullable: false,
-        primary: true,
-        type: 'string'
-      },
       owo: {
         nullable: false,
         primary: false,
         type: 'object'
+      },
+      id: {
+        nullable: false,
+        primary: true,
+        type: 'string'
       }
     }, true))
     .pipe(pipelines.Insert({
-      columns: ['hmm', 'owo'],
+      columns: ['owo', 'id'],
       values: {
-        hmm: 'owo',
+        id: '1',
         owo: {
           uwu: true,
           hecc: false
@@ -37,10 +38,21 @@ async function main() {
       },
       table: 'test'
     }))
-    .pipe(pipelines.Select('test', ['hmm', 'owo']))
+    .pipe(pipelines.Select('test', ['id', '1']))
     .pipe(pipelines.Count('test'))
     .pipe(pipelines.Count('test', 1))
-    .pipe(pipelines.DropTable('test'));
+    .pipe(pipelines.Update({
+      returning: ['id'],
+      values: {
+        owo: {
+          hecc: true,
+          uwu: false
+        }
+      },
+      query: ['id', '1'],
+      table: 'test',
+      type: 'set'
+    }));
 
   const all = await batch.all();
   console.log(all);

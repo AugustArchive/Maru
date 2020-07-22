@@ -20,9 +20,6 @@ declare module '@augu/maru' {
     /** All of the avaliable pipelines */
     export namespace pipelines {
       interface InsertOptions<T> {
-        /** List of columns to insert */
-        columns: string[];
-
         /** The values */
         values: { [P in keyof T]?: T[P] }
 
@@ -30,9 +27,12 @@ declare module '@augu/maru' {
         table: string;
       }
 
-      interface UpdateOptions {
+      interface UpdateOptions<V> {
+        /** Return any specific values when it's updated */
+        returning?: string[];
+
         /** The values to insert */
-        values: [string, unknown][];
+        values: { [P in keyof V]?: V[P]; }
       
         /** The query (to find it) */
         query?: [string, unknown];
@@ -122,7 +122,8 @@ declare module '@augu/maru' {
        * @param options Additional options
        * @typeparam T: The insert-one object
        */
-      export function Insert<T>(options: Maru.pipelines.InsertOptions<T>): Maru.Pipeline;
+      // eslint-disable-next-line
+      export function Insert<T extends object>(options: Maru.pipelines.InsertOptions<T>): Maru.Pipeline;
 
       /**
        * Pipeline to get an entry
@@ -141,8 +142,10 @@ declare module '@augu/maru' {
       /**
        * Pipeline to update an entry
        * @param options Additional options
+       * @typeparam T: The update object
        */
-      export function Update(options: Maru.pipelines.UpdateOptions): Maru.Pipeline;
+      // eslint-disable-next-line
+      export function Update<T extends object>(options: Maru.pipelines.UpdateOptions<T>): Maru.Pipeline;
     }
 
     /**
