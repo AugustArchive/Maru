@@ -22,13 +22,12 @@
 
 import { PoolClient, Pool } from 'pg';
 import type { Pipeline } from './Pipeline';
-import { EventEmitter } from 'events';
 import { Batch } from './Batch';
 
 /**
  * The core of actually connecting to the database
  */
-export class Connection extends EventEmitter {
+export class Connection {
   /** Check if the connection exists */
   public connected: boolean;
 
@@ -43,8 +42,6 @@ export class Connection extends EventEmitter {
    * @param pool The pool instance
    */
   constructor(pool: Pool) {
-    super();
-
     this.connected = false;
     this.pool = pool;
   }
@@ -53,19 +50,12 @@ export class Connection extends EventEmitter {
    * Connects to the database
    */
   async connect() {
-    if (this.connected) {
-      this.emit('error', new Error('Connection already exists'));
-      return;
-    }
+    if (this.connected) throw new Error('Connection already exists');
 
     await this.pool.connect()
       .then((client) => {
-        this.emit('connected');
-
         this.client = client;
         this.connected = true;
-      }).catch((error) => {
-        this.emit('error', error || new Error('No error was provided'));
       });
   }
 
@@ -77,16 +67,28 @@ export class Connection extends EventEmitter {
   }
 
   /**
+   * Queries SQL and returns the values as an array
+   * @param sql The SQL to execute
+   */
+  query<T>(sql: string | Pipeline, array: false): Promise<T | null>;
+
+  /**
+   * Queries SQL and returns the values as an array
+   * @param sql The SQL to execute
+   */
+  query<T>(sql: string | Pipeline, array: true): Promise<T[] | null>;
+
+  /**
    * Queries SQL and returns the value
    * @param sql The SQL to execute
    */
-  query<T>(sql: string | Pipeline) {
+  query<T>(sql: string | Pipeline, array?: boolean): Promise<T | T[] | null> {
     const query = typeof sql === 'string' ? sql : sql.getSql();
-    return new Promise<T | null>((resolve, reject) => this.client.query(query, (error, results) => {
+    return new Promise((resolve, reject) => this.client.query(query, (error, results) => {
       if (error) return reject(error);
 
       if (results.rowCount < 1) return resolve(null);
-      else resolve(results.rows[0]);
+      else resolve(array ? results.rows : results.rows[0]);
     }));
   }
 }

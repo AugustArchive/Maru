@@ -8,25 +8,26 @@ const dialect = new Dialect({
 
 async function main() {
   const connection = dialect.createConnection();
-  addEvents(connection);
-
   await connection.connect();
 
   const batch = connection.createBatch();
   batch
     .pipe(pipelines.DropTable('test'))
     .pipe(pipelines.CreateTable('test', {
-      owo: {
-        nullable: false,
-        primary: false,
-        type: 'object'
+      values: {
+        owo: {
+          nullable: false,
+          primary: false,
+          type: 'object'
+        },
+        id: {
+          nullable: false,
+          primary: true,
+          type: 'string'
+        }
       },
-      id: {
-        nullable: false,
-        primary: true,
-        type: 'string'
-      }
-    }, true))
+      exists: true
+    }))
     .pipe(pipelines.Insert({
       values: {
         id: '1',
@@ -55,11 +56,6 @@ async function main() {
 
   const all = await batch.all();
   console.log(all);
-}
-
-function addEvents(connection) {
-  connection.on('connect', () => console.log('connected uwu'));
-  connection.on('error', console.error);
 }
 
 main()

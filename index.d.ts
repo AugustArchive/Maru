@@ -63,6 +63,17 @@ declare module '@augu/maru' {
         type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
       }
 
+      interface CreateTableOptions<V> {
+        /** 
+         * If we should create the table if it doesn't exist 
+         * @default true
+         */
+        exists?: boolean;
+
+        /** The values to add */
+        values: CreateTableValues<V>;
+      }
+
       /**
        * Pipeline to create a database
        * @param db The database name
@@ -88,7 +99,7 @@ declare module '@augu/maru' {
        * @param exists If we should apply `IF NOT EXISTS`
        */
       // eslint-disable-next-line
-      export function CreateTable<T extends object>(table: string, values?: Maru.pipelines.CreateTableValues<T>, exists?: boolean): Maru.Pipeline;
+      export function CreateTable<T extends object>(table: string, options: CreateTableOptions<T>): Maru.Pipeline;
 
       /**
        * Pipeline to drop the table
@@ -164,7 +175,7 @@ declare module '@augu/maru' {
     /**
      * The core of actually connecting to the database
      */
-    class Connection extends EventEmitter {
+    class Connection {
       /** Check if the connection exists */
       public connected: boolean;
     
@@ -191,10 +202,16 @@ declare module '@augu/maru' {
       createBatch(): Maru.Batch;
     
       /**
-       * Queries SQL and returns the value
+       * Queries SQL and returns the values as an array
        * @param sql The SQL to execute
        */
-      query<T>(sql: string | Pipeline): Promise<T | null>;
+      query<T>(sql: string | Pipeline, array: false): Promise<T | null>;
+
+      /**
+       * Queries SQL and returns the values as an array
+       * @param sql The SQL to execute
+       */
+      query<T>(sql: string | Pipeline, array: true): Promise<T[] | null>;
     }
 
     interface DialectOptions {
@@ -230,13 +247,13 @@ declare module '@augu/maru' {
     }
 
     class Batch {
-      /** The number of pipes */
+      /** The number of pipes to add until a MAX_PIPE_ERROR occurs */
       private numOfPipes: number;
     
       /** The connection */
       public connection: Connection;
     
-      /** A list of pipelines that were piped */
+      /** A list of pipelines that were piped using Batch#pipe */
       public pipelines: Collection<Pipeline>;
     
       /** If it was executed already */
@@ -263,14 +280,15 @@ declare module '@augu/maru' {
       pipe(line: Pipeline): this;
     
       /**
-       * Executes the first pipeline
+       * Executes the next pipeline avaliable
+       * @param array If we should an Array or not
        */
-      next<T = unknown>(): Promise<T | null>;
+      next<T = unknown>(array?: boolean): Promise<T | null>;
     
       /**
-       * Executes the transaction
+       * Executes the batch
        */
-      all<T = unknown>(): Promise<T[]>;
+      all<T extends unknown[] = unknown[]>(): Promise<T[]>;
     }
   }
 

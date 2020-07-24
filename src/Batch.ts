@@ -100,8 +100,9 @@ export class Batch {
 
   /**
    * Executes the next pipe
+   * @param array If the query should return an Array or not
    */
-  next<T = unknown>() {
+  next<T = unknown>(array: boolean = false) {
     if (this.executed) throw new Error('This batch was already executed');
 
     return new Promise<T | null>((resolve, reject) => {
@@ -110,7 +111,7 @@ export class Batch {
       const pipeline = this.pipelines.shift();
       if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
 
-      this.connection.query<T>(pipeline)
+      this.connection.query<T>(pipeline, (<any> array))
         .then((results) => resolve(convertResults(pipeline, results))).catch(reject);
     });
   }
@@ -118,7 +119,7 @@ export class Batch {
   /**
    * Executes the batch and returns an Array of the result
    */
-  all<T = unknown>() {
+  all<T extends unknown[] = unknown[]>() {
     if (this.executed) throw new Error('This transaction was already executed');
 
     return new Promise<T>(async(resolve, reject) => {
@@ -127,7 +128,7 @@ export class Batch {
       const items: unknown[] = [];
       for (const [key, pipeline] of this.pipelines) {
         try {
-          const results = await this.connection.query(pipeline);
+          const results = await this.connection.query(pipeline, false);
           items.push(convertResults(pipeline, results));
           this.pipelines.delete(key);
         } catch(ex) {

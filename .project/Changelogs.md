@@ -2,21 +2,15 @@
 - Publish library
 
 # v1.0.1
-## Fixes
 - Use objects instead of arrays in Create Table pipe
 - Rename `Transaction` to `Batch`
-
-## Additions
 - Add an option to close the pool (Dialect#destroy)
 
 # v1.0.2
 - Fix publishing
 
 # v1.0.3
-## Fixes
 - Set `numOfPipes` in Batch to Infinity
-
-## Additions
 - Add `Count` pipeline
 
 # v1.1.0
@@ -25,8 +19,14 @@
 
 # v1.2.0
 - Fix pipe Update's options
-  - Added `returning` to use the SQL type `RETURNING <values>`
-  - Fix the SQL string
+  - Added `returning` option, to use the SQL type `RETURNING <values>`
+  - Fix the SQL string for updating values
 - Fix pipe Insert's options
   - `columns` are removed in favor of the `values` property (being `key` is the name and `value` being the actual value)
 - Updated error strings
+
+# v1.2.1
+- Add an `array` option when returning values in `Connection#query` and `Batch#next`
+- Enforce Arrays in `Batch#all`
+- Fix a bug where an object couldn't be inserted in the Insert pipe [Typings]
+- Update JSDoc in typings

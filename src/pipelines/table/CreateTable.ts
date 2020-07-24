@@ -28,7 +28,7 @@ type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'big
 
 // eslint-disable-next-line
 type Values<T> = { 
-  [P in keyof T]?: SupportedTypes | CreateOptions; 
+  [P in keyof T]: SupportedTypes | CreateOptions; 
 };
 
 interface CreateOptions {
@@ -45,10 +45,21 @@ interface CreateOptions {
   type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
 }
 
-export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolean = false): Pipeline => ({
+interface CreateTableOptions<T> {
+  /** If we should create it if it doesn't exist */
+  exists?: boolean;
+
+  /** The values to add */
+  values: Values<T>;
+}
+
+export const CreateTable = <T>(table: string, options: CreateTableOptions<T>): Pipeline => ({
   id: 'create_table',
   getSql() {
     const keyValues: string[] = [];
+    const { values } = options;
+    const exists = options.hasOwnProperty('exists') ? options.exists! : true;
+
     if (values) {
       const keys = Object.keys(values);
       for (let i = 0; i < keys.length; i++) {
@@ -57,6 +68,9 @@ export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolea
         // JavaScript is weird:
         // I added the check if it's not an array since
         // typeof an array returns 'object'?
+        //
+        // Update: Arrays are an enumerable object, so it makes sense
+        // but why though?
         if (typeof value === 'object' && !Array.isArray(value)) {
           const val = value as CreateOptions;
           if (!val.hasOwnProperty('type')) throw new Error('Missing "type"');
@@ -75,7 +89,9 @@ export const CreateTable = <T>(table: string, values?: Values<T>, exists: boolea
           keyValues.push(convertJSTypeToSql(keys[i], val.type, options));
         } else {
           if (!SUPPORTED.includes(value)) throw new Error(`Invalid type "${value}" (${SUPPORTED.join(', ')})`);
-          keyValues.push(convertJSTypeToSql(keys[i], value, {}));
+          keyValues.push(convertJSTypeToSql(keys[i], value, {
+            nullable: value === null
+          }));
         }
       }
     }
