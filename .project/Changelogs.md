@@ -30,3 +30,6 @@
 - Enforce Arrays in `Batch#all`
 - Fix a bug where an object couldn't be inserted in the Insert pipe [Typings]
 - Update JSDoc in typings
+
+# v1.2.2
+- Fix typings in `Connection#query`
