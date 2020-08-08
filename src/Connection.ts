@@ -82,7 +82,7 @@ export class Connection {
    * Queries SQL and returns the value
    * @param sql The SQL to execute
    */
-  query<T>(sql: string | Pipeline, array?: boolean): Promise<T | T[] | null> {
+  query<T>(sql: string | Pipeline, array: boolean = false): Promise<T | T[] | null> {
     const query = typeof sql === 'string' ? sql : sql.getSql();
     return new Promise((resolve, reject) => this.client.query(query, (error, results) => {
       if (error) return reject(error);

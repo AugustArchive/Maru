@@ -202,16 +202,16 @@ declare module '@augu/maru' {
       createBatch(): Maru.Batch;
     
       /**
-       * Queries SQL and returns the values as an array
+       * Queries SQL and returns the value or `null` if not found
        * @param sql The SQL to execute
        */
-      query<T>(sql: string | Pipeline, array: false): Promise<T | null>;
+      query<T>(sql: string | Pipeline, array?: false): Promise<T | null>;
 
       /**
        * Queries SQL and returns the values as an array
        * @param sql The SQL to execute
        */
-      query<T>(sql: string | Pipeline, array: true): Promise<T[] | null>;
+      query<T>(sql: string | Pipeline, array?: true): Promise<T[] | null>;
     }
 
     interface DialectOptions {
