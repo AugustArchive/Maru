@@ -33,3 +33,9 @@
 
 # v1.2.2
 - Fix typings in `Connection#query`
+
+# v1.2.3
+- Fix delete pipeline from using the wrong operator
+
+# v1.2.4
+- Add `Dialect#destroy` to typings

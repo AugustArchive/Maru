@@ -244,6 +244,11 @@ declare module '@augu/maru' {
        * Creates a new connection
        */
       createConnection(): Maru.Connection;
+
+      /**
+       * Destroys all connections
+       */
+      destroy(): Promise<void>;
     }
 
     class Batch {

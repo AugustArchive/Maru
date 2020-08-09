@@ -42,14 +42,14 @@ export class Dialect {
   private connections: Collection<Connection>;
   
   /** The pool instance */
-  private pool!: Pool;
+  private pool: Pool;
 
   /**
    * Creates a new Dialect
    * @param options The options
    */
   constructor(options: DialectOptions) {
-    this.activeConnections = options.hasOwnProperty('activeConnections') ? options.activeConnections! : 25;
+    this.activeConnections = options.hasOwnProperty('activeConnections') ? options.activeConnections! : 3;
     this.connections = new Collection();
     this.pool = new Pool({
       password: options.password,
