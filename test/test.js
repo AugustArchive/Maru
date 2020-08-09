@@ -52,7 +52,8 @@ async function main() {
       query: ['id', '1'],
       table: 'test',
       type: 'set'
-    }));
+    }))
+    .pipe(pipelines.Delete('test', ['id', '1']));
 
   const all = await batch.all();
   console.log(all);

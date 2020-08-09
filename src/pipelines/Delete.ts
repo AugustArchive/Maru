@@ -26,7 +26,7 @@ import { escape } from '../util';
 export const Delete = (table: string, column: [string, unknown]): Pipeline => ({
   id: 'delete',
   getSql() {
-    if (column.length > 1) throw new Error('Pipeline "delete" (param: \'column\') must be an array of 2 items [columnId, value]');
+    if (column.length < 1) throw new Error('Pipeline "delete" (param: \'column\') must be an array of 2 items [columnId, value]');
   
     return `DELETE FROM ${table} WHERE ${column[0]} = ${escape(column[1])};`;
   }
