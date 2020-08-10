@@ -74,7 +74,6 @@ function convertResults(sql: Pipeline | string, results: any) {
             }
   
             if (DateRegex.test(value)) {
-              console.log(value);
               results[key] = new Date(value);
             }
           }
