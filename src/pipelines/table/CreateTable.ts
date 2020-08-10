@@ -23,8 +23,8 @@
 import { convertJSTypeToSql, SQLOptions } from '../../util';
 import { Pipeline } from '../..';
 
-const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string', 'object'];
-type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
+const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string', 'object', 'date'];
+type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object' | 'date';
 
 // eslint-disable-next-line
 type Values<T> = { 
@@ -42,7 +42,7 @@ interface CreateOptions {
   size?: number;
 
   /** The type */
-  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object';
+  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object' | 'date';
 }
 
 interface CreateTableOptions<T> {

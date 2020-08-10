@@ -25,8 +25,13 @@ import { Collection } from '@augu/immutable';
 import { Connection } from './Connection';
 import { getKindOf } from './util';
 
+// credit: https://stackoverflow.com/questions/32608842/validating-if-string-contains-date
+const DateRegex = /(\d{4})([\/-])(\d{1,2})\2(\d{1,2})/;
+
 function convertResults<T>(pipe: Pipeline, results: any): T {
-  if (results === null) return (<any> null);
+  if (results === null) return <any> null;
+  if (Array.isArray(results)) return <any> results.map(result => convertResults(pipe, result));
+
   switch (pipe.id) {
     case 'select_all':
     case 'select': {
@@ -41,6 +46,10 @@ function convertResults<T>(pipe: Pipeline, results: any): T {
           } catch {
             // ignore since it's not a JSON object/array
           }
+
+          if (DateRegex.test(value)) {
+            results[key] = new Date(value);
+          }
         }
       });
     } break;
@@ -48,7 +57,6 @@ function convertResults<T>(pipe: Pipeline, results: any): T {
     default: break;
   }
 
-  if (pipe.id === 'count_docs') return <any> Number(results['count']);
   return results;
 }
 
@@ -109,9 +117,12 @@ export class Batch {
       if (this.pipelines.empty) return reject(new Error('Batch doesn\'t include any pipelines'));
 
       const pipeline = this.pipelines.shift();
-      if (pipeline === null) return reject(new Error('Pipeline exists but is not avaliable?'));
+      if (pipeline === null) {
+        this.executed = true;
+        return reject(new Error('Pipelines are empty, so this Batch has been executed'));
+      }
 
-      this.connection.query<T>(pipeline, (<any> array))
+      this.connection.query<T>(pipeline, <any> array)
         .then((results) => resolve(convertResults(pipeline, results))).catch(reject);
     });
   }

@@ -28,10 +28,15 @@
 export const isObject = (data: unknown): data is object => typeof data === 'object' && !Array.isArray(data);
 
 /**
- * Appends `'` if it's a string or an object (jsonb)
+ * Appends `'` if it's a string, an object (jsonb), or a Date
  * @param type The type to escape
  */
-export const escape = (type: any) => typeof type === 'string' ? `'${type}'` : isObject(type) ? `'${JSON.stringify(type)}'` : type;
+export const escape = (type: any) => {
+  if (typeof type === 'string') return `'${type}'`;
+  else if (isObject(type)) return `'${JSON.stringify(type)}'`;
+  else if (type instanceof Date) return `'${type.toUTCString()}'`;
+  else return type;
+};
 
 export interface SQLOptions {
   /** Is it nullable? */
@@ -55,7 +60,7 @@ export interface SQLOptions {
  */
 export function convertJSTypeToSql(
   name: string,
-  type: 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function' | 'float' | 'array' | 'null' | 'class', 
+  type: 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function' | 'float' | 'array' | 'null' | 'class' | 'date', 
   options: SQLOptions
 ) {
   const isPrimary = options.hasOwnProperty('primary') && options.primary! ? ' PRIMARY KEY' : '';
@@ -68,13 +73,14 @@ export function convertJSTypeToSql(
   if (isArray && (options.hasOwnProperty('primary') && options.primary!)) throw new Error('Primary key cannot be an Array');
   if (
     (options.hasOwnProperty('primary') && options.primary!) && 
-    (options.hasOwnProperty('null') && options.nullable!)
+    (options.hasOwnProperty('nullable') && options.nullable!)
   ) throw new Error('Primary key cannot be nullable');
 
   const size = allocSize > 1 ? `(${allocSize})` : '';
   const array = isArray ? `[${allocSize > 1 ? allocSize : ''}]` : '';
   switch (type) {
     case 'boolean': return `${name.toLowerCase()} BOOL${isNullable}${isPrimary}`;
+    case 'date':
     case 'string': return `${name.toLowerCase()} VARCHAR${size}${array}${isNullable}${isPrimary}`;
     case 'object': return `${name.toLowerCase()} JSONB${size}${array}${isNullable}${isPrimary}`;
     case 'bigint': return `${name.toLowerCase()} BIGINT${array}${isNullable}${isPrimary}`;
@@ -98,6 +104,7 @@ export const convertArrayToSql = (values: unknown[]) => `ARRAY[${values.length ?
 export function getKindOf(value: unknown) {
   if (!['object', 'function', 'number'].includes(typeof value)) return typeof value;
   if (typeof value === 'number') return Number.isInteger(value) ? 'number' : 'float';
+  if (value instanceof Date) return 'date';
   if (Array.isArray(value)) return 'array';
   if (value === undefined) return 'undefined';
   if (value === null) return 'null';

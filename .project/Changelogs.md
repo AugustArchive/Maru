@@ -39,3 +39,7 @@
 
 # v1.2.4
 - Add `Dialect#destroy` to typings
+
+# v1.2.5
+- Support dates in Insert and CreateTable pipelines
+- Convert results from JSON/Date/Counts to the respected value in `Connection#query`

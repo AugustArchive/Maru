@@ -40,8 +40,12 @@ export const Insert = <T = any>(options: InsertOptions<T>): Pipeline => ({
     function convert(value: unknown) {
       const type = getKindOf(value);
       if (type === 'array') return convertArrayToSql(<unknown[]> value);
-      else if (type === 'string') return escape(<string> value);
-      else if (type === 'object') return escape(JSON.stringify(<any> value));
+      else if (type === 'string') {
+        const date = Date.parse(<string> value);
+        if (!isNaN(date)) return escape(<Date> value);
+        return escape(<string> value);
+      } else if (type === 'object') return escape(JSON.stringify(<any> value));
+      else if (type === 'date') return escape((value as any).toISOString());
       else return value;
     }
 
