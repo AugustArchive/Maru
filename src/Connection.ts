@@ -80,8 +80,6 @@ function convertResults(sql: Pipeline | string, results: any) {
         });
       }
     }
-
-    if (sql.startsWith('COUNT')) return Number(results['count']);
   }
 
   return results;
