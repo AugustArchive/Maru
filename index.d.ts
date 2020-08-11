@@ -1,14 +1,13 @@
 /**
  * TypeScript definitions for @augu/maru
  * 
- * Author: August <august@augu.dev>
+ * Author: Chris "August" Hernandez <august@augu.dev>
  * Project: https://github.com/auguwu/Maru
  * License: MIT
  */
 
 declare module '@augu/maru' {
   import { PoolClient, Pool } from 'pg';
-  import { EventEmitter } from 'events';
   import { Collection } from '@augu/immutable';
 
   namespace Maru {
@@ -45,16 +44,19 @@ declare module '@augu/maru' {
       }
 
       type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint';
-      type CreateTableValues<T> = {
-        [P in keyof T]?: SupportedTypes | Maru.pipelines.CreateOptions;
+      type TableSchema<T> = {
+        [P in keyof T]?: SupportedTypes | Maru.pipelines.CreateSchemaOptions;
       };
 
-      interface CreateOptions {
+      interface CreateSchemaOptions {
         /** If the value is nullable */
         nullable?: boolean;
       
         /** If the value is a primary key */
         primary?: boolean;
+
+        /** If this valie is an Array or not */
+        array?: boolean;
       
         /** Allocate a custom size (only used in Arrays and Strings) */
         size?: number;
@@ -71,7 +73,7 @@ declare module '@augu/maru' {
         exists?: boolean;
 
         /** The values to add */
-        values: CreateTableValues<V>;
+        schema: TableSchema<V>;
       }
 
       /**
@@ -265,7 +267,7 @@ declare module '@augu/maru' {
       public executed: boolean;
     
       /**
-       * Creates a new Transaction
+       * Creates a new Batch
        * @param connection The connection
        */
       constructor(connection: Connection);

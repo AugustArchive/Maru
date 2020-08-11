@@ -43,3 +43,7 @@
 # v1.2.5
 - Support dates in Insert and CreateTable pipelines
 - Convert results from JSON/Date/Counts to the respected value in `Connection#query`
+
+# v1.2.6
+- Fix array and nullable in the CreateTable schema
+- Rename `values` to `schema` in CreateTableOptions

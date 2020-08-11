@@ -23,47 +23,50 @@
 import { convertJSTypeToSql, SQLOptions } from '../../util';
 import { Pipeline } from '../..';
 
-const SUPPORTED: SupportedTypes[] = ['array', 'float', 'number', 'boolean', 'array', 'string', 'object', 'date'];
-type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object' | 'date';
+const SUPPORTED: SupportedTypes[] = ['float', 'number', 'boolean', 'string', 'object', 'date'];
+type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'bigint' | 'object' | 'date';
 
 // eslint-disable-next-line
-type Values<T> = { 
-  [P in keyof T]: SupportedTypes | CreateOptions; 
+type schema<T> = { 
+  [P in keyof T]: SupportedTypes | CreateTableSchema; 
 };
 
-interface CreateOptions {
+interface CreateTableSchema {
   /** If the value is nullable */
   nullable?: boolean;
 
   /** If the value is a primary key */
   primary?: boolean;
 
+  /** If it's an Array */
+  array?: boolean;
+
   /** Allocate a custom size (only used in Arrays and Strings) */
   size?: number;
 
   /** The type */
-  type: 'string' | 'float' | 'number' | 'boolean' | 'array' | 'bigint' | 'object' | 'date';
+  type: 'string' | 'float' | 'number' | 'boolean' | 'bigint' | 'object' | 'date';
 }
 
 interface CreateTableOptions<T> {
   /** If we should create it if it doesn't exist */
   exists?: boolean;
 
-  /** The values to add */
-  values: Values<T>;
+  /** The schema to add */
+  schema: schema<T>;
 }
 
 export const CreateTable = <T>(table: string, options: CreateTableOptions<T>): Pipeline => ({
   id: 'create_table',
   getSql() {
-    const keyValues: string[] = [];
-    const { values } = options;
+    const keyschema: string[] = [];
+    const { schema } = options;
     const exists = options.hasOwnProperty('exists') ? options.exists! : true;
 
-    if (values) {
-      const keys = Object.keys(values);
+    if (schema) {
+      const keys = Object.keys(schema);
       for (let i = 0; i < keys.length; i++) {
-        const value = values[keys[i]];
+        const value = schema[keys[i]];
 
         // JavaScript is weird:
         // I added the check if it's not an array since
@@ -72,30 +75,31 @@ export const CreateTable = <T>(table: string, options: CreateTableOptions<T>): P
         // Update: Arrays are an enumerable object, so it makes sense
         // but why though?
         if (typeof value === 'object' && !Array.isArray(value)) {
-          const val = value as CreateOptions;
+          const val = value as CreateTableSchema;
           if (!val.hasOwnProperty('type')) throw new Error('Missing "type"');
           if (!SUPPORTED.includes(val.type)) throw new Error(`SQL type "${val.type}" is not a valid type (${SUPPORTED.join(', ')})`);
         
           const options: SQLOptions = {};
           if (val.hasOwnProperty('primary') && val.primary!) options.primary = true;
-          if (val.hasOwnProperty('null') && val.nullable!) options.nullable = true;
+          if (val.hasOwnProperty('nullable') && val.nullable!) options.nullable = true;
+          if (val.hasOwnProperty('array')) options.array = val.array!;
           if (val.hasOwnProperty('size')) {
-            if (!['array', 'string'].includes(val.type)) throw new Error(`SQL type "${val.type}" cannot have an allocated size, only arrays and strings are supported`);
+            if (!['array', 'string'].includes(val.type)) throw new Error(`SQL type "${val.type}" cannot have an allocated size, only strings are supported`);
             if (isNaN(val.size!) || !Number.isInteger(val.size!)) throw new Error('Allocated size cannot be NaN or a float integer');
 
             options.size = val.size!;
           }
 
-          keyValues.push(convertJSTypeToSql(keys[i], val.type, options));
+          keyschema.push(convertJSTypeToSql(keys[i], val.type, options));
         } else {
           if (!SUPPORTED.includes(value)) throw new Error(`Invalid type "${value}" (${SUPPORTED.join(', ')})`);
-          keyValues.push(convertJSTypeToSql(keys[i], value, {
+          keyschema.push(convertJSTypeToSql(keys[i], value, {
             nullable: value === null
           }));
         }
       }
     }
     
-    return `CREATE TABLE ${exists ? 'IF NOT EXISTS' : ''} ${table}${keyValues.length ? ` (${keyValues.join(', ')})` : ''};`;
+    return `CREATE TABLE ${exists ? 'IF NOT EXISTS' : ''} ${table}${keyschema.length ? ` (${keyschema.join(', ')})` : ''};`;
   }
 });

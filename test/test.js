@@ -12,9 +12,9 @@ async function main() {
 
   const batch = connection.createBatch();
   batch
-    //.pipe(pipelines.DropTable('test'))
+    .pipe(pipelines.DropTable('test'))
     .pipe(pipelines.CreateTable('test', {
-      values: {
+      schema: {
         owo: {
           nullable: false,
           primary: false,
@@ -29,6 +29,12 @@ async function main() {
           nullable: false,
           primary: false,
           type: 'string'
+        },
+        arr: {
+          nullable: false,
+          primary: false,
+          array: true,
+          type: 'string'
         }
       },
       exists: true
@@ -37,6 +43,7 @@ async function main() {
       values: {
         id: '1',
         date: new Date(),
+        arr: ['a', 'b', 'c', 'd'],
         owo: {
           uwu: true,
           hecc: false
