@@ -27,7 +27,7 @@ const SUPPORTED: SupportedTypes[] = ['float', 'number', 'boolean', 'string', 'ob
 type SupportedTypes = 'string' | 'float' | 'number' | 'boolean' | 'bigint' | 'object' | 'date';
 
 // eslint-disable-next-line
-type schema<T> = { 
+type TableSchema<T> = { 
   [P in keyof T]: SupportedTypes | CreateTableSchema; 
 };
 
@@ -53,13 +53,13 @@ interface CreateTableOptions<T> {
   exists?: boolean;
 
   /** The schema to add */
-  schema: schema<T>;
+  schema: TableSchema<T>;
 }
 
 export const CreateTable = <T>(table: string, options: CreateTableOptions<T>): Pipeline => ({
   id: 'create_table',
   getSql() {
-    const keyschema: string[] = [];
+    const values: string[] = [];
     const { schema } = options;
     const exists = options.hasOwnProperty('exists') ? options.exists! : true;
 
@@ -90,16 +90,16 @@ export const CreateTable = <T>(table: string, options: CreateTableOptions<T>): P
             options.size = val.size!;
           }
 
-          keyschema.push(convertJSTypeToSql(keys[i], val.type, options));
+          values.push(convertJSTypeToSql(keys[i], val.type, options));
         } else {
           if (!SUPPORTED.includes(value)) throw new Error(`Invalid type "${value}" (${SUPPORTED.join(', ')})`);
-          keyschema.push(convertJSTypeToSql(keys[i], value, {
+          values.push(convertJSTypeToSql(keys[i], value, {
             nullable: value === null
           }));
         }
       }
     }
     
-    return `CREATE TABLE ${exists ? 'IF NOT EXISTS' : ''} ${table}${keyschema.length ? ` (${keyschema.join(', ')})` : ''};`;
+    return `CREATE TABLE ${exists ? 'IF NOT EXISTS' : ''} ${table}${values.length ? ` (${values.join(', ')})` : ''};`;
   }
 });
